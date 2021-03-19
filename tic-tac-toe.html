@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="jquery-3.5.1.js"></script>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <title>Document</title>
+</head>
+
+<style>
+    
+    body{
+        background-color: rgb(2, 11, 15)
+    }
+    
+    .game_table{
+        width: 600px;
+        height: 600px;
+    }
+
+    
+    .cell{
+        width: 200px;
+        height: 200px;
+        background-color: grey;
+        margin: 2px;
+    }
+    
+    .seagreen{
+        background-color: seagreen;
+    }
+    
+    .orange{
+        background-color: rgb(114, 31, 6);
+    }
+    
+    .seagreen-heading{
+        color: seagreen;
+    }
+    
+    .orange-heading{
+        color: rgb(114, 31, 6);
+    }
+    
+</style>
+
+<body>
+    
+<div class="container" align='center'>
+    <div class="row mt-5">
+        <div class="col-7">
+            <div class="title_group">
+                <h1 class="game_title text-light">Tic Tac Toe</h1>
+                <h3 class="game_status text-light">Click to start</h3>
+            </div>
+            
+            <div class="game_table">
+                <div class="row">
+                    <div class="cell position-1"></div>
+                    <div class="cell position-2"></div>
+                    <div class="cell position-3"></div>
+                </div>
+                <div class="row">
+                    <div class="cell position-4"></div>
+                    <div class="cell position-5"></div>
+                    <div class="cell position-6"></div>
+                </div>
+                <div class="row">
+                    <div class="cell position-7"></div>
+                    <div class="cell position-8"></div>
+                    <div class="cell position-9"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-5">
+            <button class="game-reset btn btn-success btn-lg">Reset the game</button>
+            <div class="info mt-2"></div>
+            
+            <div class="result_container">
+                <table class="result_talbe table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="text-light">Players</th>    
+                            <th scope="col" class="text-light">Scores</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="seagreen-row">
+                            <th scope="row" class="seagreen-heading">Seagreen</th>
+                            <td class="score text-muted" data-score="0"></td>
+                        </tr>
+                        <tr class="orange-row">
+                            <th scope="row" class="orange-heading">Orange</th>
+                            <td class="score text-muted" data-score="1"></td>
+                        </tr>
+                        
+                    </tbody>
+                    
+                </table>
+            </div>
+            
+        </div>
+        
+        
+        
+    </div>
+    
+</div>
+
+
+<script>
+    
+    $(function() {
+        const WINNING_CONDITIONS = [
+            // horizonal
+            ['position-1', 'position-2', 'position-3'],
+            ['position-4', 'position-5', 'position-6'],
+            ['position-7', 'position-8', 'position-9'],
+            
+            // vertical
+            ['position-1', 'position-4', 'position-7'],
+            ['position-2', 'position-5', 'position-8'],
+            ['position-3', 'position-6', 'position-9'],
+            
+            // diagonal
+            ['position-1', 'position-5', 'position-9'],
+            ['position-3', 'position-5', 'position-7'],
+        ]
+        
+        const colors = ['seagreen', 'orange']
+        let winner = null
+        let win = false
+        let color = colors[0]
+        
+        
+        let seagreen = {
+            wins: 0
+        }
+        let orange = {
+            wins: 0,
+        }
+                
+        $('.cell').on('click', function() {
+            
+            $('.game_status').html('Game Started')
+            
+            var color_turn = (color ===  'seagreen') ? 'orange' : 'seagreen' 
+            $('.info').html(`<p class="text-muted">Turn of ${color_turn}</p>`)
+            var position_selector = '.' + this.classList[1]
+                    
+            if (!color_exist(position_selector)){
+                $(position_selector).addClass(color)
+                color = color_toggle(color)
+            }
+            
+            winner = check_game_status()
+            console.log('win '+win)
+            
+            if (win){
+                console.log('winner  ' + winner)
+                $('.game_status').html(`${winner} won the game ! Congratulations :)`).removeClass('text-light').css({color: $('.'+winner).css('backgroundColor')})
+                $('.' + winner + '-row>td').html(change_score(winner))
+            }
+        })
+        
+        function color_toggle(color) {
+            if (color === colors[0]) {
+                return colors[1]
+            } 
+            return colors[0]
+        }
+        
+        function color_exist(position_selector) {
+            if ($(position_selector).hasClass(colors[0]) || $(position_selector).hasClass(colors[1])){
+                return true
+            } 
+            return false
+        }
+        
+        function check_game_status() {
+            for (let row of WINNING_CONDITIONS) {
+                console.log(row)
+                let i = 0
+                first_item_selector = '.' + row[i]
+                second_item_selector = '.' + row[i+1]
+                third_item_selector = '.' + row[i+2]
+                
+                // problem with winning logic
+                if ($(first_item_selector).hasClass(colors[0]) && $(second_item_selector).hasClass(colors[0]) && $(third_item_selector).hasClass(colors[0])){
+                    win = true
+                    return colors[0]
+                }
+                else if ($(first_item_selector).hasClass(colors[1]) && $(second_item_selector).hasClass(colors[1]) && $(third_item_selector).hasClass(colors[1])){
+                    win = true
+                    return colors[1]
+                }
+            }
+        }
+        
+        function change_score(winner){
+            return eval(winner).wins += 1
+        }
+        
+        $('.game-reset').on('click', function() {
+            winner = null;
+            win = false;
+            
+            $('.cell').removeClass('seagreen').removeClass('orange')
+            $('.game_status').html('<p class="text-light">Click to start</p>')
+            $('.info').html(`<p class="text-muted">Game reseted</p>`)
+            $('.cell').on('click')    
+        })
+    })
+    
+    function color_turn(color) {
+        // whoes turn now
+        
+        return 
+    }
+    
+    
+</script>
+
+    
+</body>
+
+</html>
